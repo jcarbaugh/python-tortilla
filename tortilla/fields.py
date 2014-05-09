@@ -15,8 +15,8 @@ class Field(object):
         self._value = None
         self.name = dfn['name']
         self.label = dfn['label']
-        self.default = dfn['defaultValue']
-        self.is_nullable = dfn['nullable'] == '1'
+        self.default = dfn.get('defaultValue')
+        self.is_nullable = dfn.get('nullable') == '1'
         self.set(self.default)
 
     def __repr__(self):
@@ -44,7 +44,8 @@ class EnumField(Field):
     type = ENUM
 
     def __init__(self, dfn):
-        self.options = dfn['values']
+        print dfn
+        self.options = dfn.get('values') or []
         super(EnumField, self).__init__(dfn)
 
     def set(self, value):

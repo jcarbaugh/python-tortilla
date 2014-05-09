@@ -3,19 +3,17 @@ import requests
 
 class SalsaObject(object):
 
-    _data = {}
-
     def __init__(self, initial=None):
+        _data = {}
         if initial:
-            self._data.update(initial)
+            _data.update(initial)
+        self.__dict__['_data'] = _data
 
     def __getattr__(self, attr):
-        # attr = self.fields.get(attr, attr)
         if attr in self._data:
             return self._data[attr]
 
     def __setattr__(self, attr, value):
-        # attr = self.fields.get(attr, attr)
         if attr in self._data:
             self._data[attr] = value
         else:
@@ -57,14 +55,20 @@ class Event(SalsaObject):
 class Group(SalsaObject):
     object = 'groups'
 
+    def __repr__(self):
+        return u"<Group: %s %s>" % (self.key, self.Group_Name)
+
 class Supporter(SalsaObject):
     object = 'supporter'
 
     def __repr__(self):
-        return u"<Supporter: %s %s %s>" % (self.first_name, self.last_name, self.email)
+        return u"<Supporter: %s %s %s %s>" % (self.key, self.First_Name, self.Last_Name, self.Email)
 
 class SupporterAction(SalsaObject):
     object = 'supporter_action'
+
+class SupporterAddress(SalsaObject):
+    object = 'supporter_address'
 
 class SupporterEvent(SalsaObject):
     object = 'supporter_event'
@@ -236,5 +240,40 @@ class Client(object):
         params = {'object': object, 'key': key}
         resp = self.http.get(url, params=params)
         return resp.json()
+
+    #
+    # custom fetch methods
+    #
+
+    def group(self, group_id):
+        object = self.object(Group.object, group_id)
+        return Group(object)
+
+    def groups(self, **kwargs):
+        objects = self.objects(Group.object, **kwargs)
+        return Group.from_list(objects)
+
+    def supporter(self, supporter_id):
+        object = self.object(Supporter.object, supporter_id)
+        return Supporter(object)
+
+    def supporters(self, **kwargs):
+        objects = self.objects(Supporter.object, **kwargs)
+        return Supporter.from_list(objects)
+
+    #
+    # custom action methods
+    #
+
+    def add_to_group(self, supporter, group):
+        return self.link(supporter.object, supporter.key, group.object, group.key)
+
+    def remove_from_group(self, supporter, group):
+        condition = "supporter_KEY=%s&groups_KEY=%s" % (supporter.key, group.key)
+        groups = self.objects(SupporterGroup.object, condition=condition)
+        if groups:
+            self.delete(SupporterGroup.object, groups[0]['key'])
+            return True
+
 
 salsa = Client()
