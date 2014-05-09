@@ -4,6 +4,8 @@ A Python library for dipping into [Salsa](http://www.salsalabs.com).
 
 ** PROTOTYPE **
 
+This is still very much a work in progress. I'm not sure what the final structure of this library will be; I've got a number of ideas floating around in the repo here. [I'm open to suggestions!](https://github.com/sunlightlabs/python-tortilla/issues)
+
 ## The Basic Client
 
 Authentication
@@ -23,11 +25,9 @@ Updating a supporter
 
 There are Salsa objects that are meant to sit atop the underlying client methods.
 
-    from tortilla.core import Supporter
-
-    a_person = Supporter.get(123456)
+    a_person = salsa.supporter('123456')
     a_person.Email = 'me+stillme@notsalsa.com'
-    a_person.save(fields='Email')
+    salsa.save(a_person)
 
 The exact API is still undetermined.
 
