@@ -79,6 +79,9 @@ class SupporterGroup(SalsaObject):
 class SignupPage(SalsaObject):
     object = 'signup_page'
 
+class EmailBlast(SalsaObject):
+    object = 'email_blast'
+
 # other objects: distributed_event, supporter_action_comment,
 # supporter_action_target, supporter_action_content, chapter
 
