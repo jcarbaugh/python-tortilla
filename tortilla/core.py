@@ -1,5 +1,6 @@
+import json
 import requests
-
+from .util import meta_fix
 
 class SalsaObject(object):
 
@@ -103,6 +104,15 @@ class Client(object):
         scheme = 'https' if secure else 'http'
         return "%s://%s.salsalabs.com/%s" % (scheme, self.hq, path)
 
+    def get_json(self, url, params=None):
+        resp = self.http.get(url, params=params)
+
+        if params.get('object') == 'email_blast':
+            content = meta_fix(resp.content)
+            return json.loads(content)
+
+        return resp.json()
+
     def authenticate(self, hq, email, password, org_key=None, chapter_key=None):
 
         self.hq = hq
@@ -129,15 +139,11 @@ class Client(object):
         raise AuthenticationError(data.get('message', 'Unable to authenticate'))
 
     def describe(self, object):
-
         url = self.build_url('api/describe2.sjs')
-
         params = {'object': object}
+        return self.get_json(url, params=params)
 
-        resp = self.http.get(url, params=params)
-        return resp.json()
-
-    def object(self, object, key):
+    def object(self, object, key, fields=None):
 
         url = self.build_url('api/getObject.sjs')
 
@@ -146,8 +152,10 @@ class Client(object):
             'key': key,
         }
 
-        resp = self.http.get(url, params=params)
-        return resp.json()
+        if fields:
+            params['include'] = fields
+
+        return self.get_json(url, params=params)
 
     def objects(self, object, condition=None, order_by=None, limit=None, fields=None):
 
@@ -164,8 +172,7 @@ class Client(object):
         if fields:
             params['include'] = fields
 
-        resp = self.http.get(url, params=params)
-        return resp.json()
+        return self.get_json(url, params=params)
 
     def join(self, object_left, key_left, object_right, key_right=None, object_center=None, **kwargs):
 
