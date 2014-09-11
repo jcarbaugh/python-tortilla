@@ -129,7 +129,7 @@ class Client(object):
         if chapter_key:
             params['chapter_KEY'] = chapter_key
 
-        resp = self.http.get(url, params=params)
+        resp = self.http.get(url, params=params, timeout=0.3)
         data = resp.json()
 
         if 'status' in data and data['status'] == 'success':
@@ -200,13 +200,13 @@ class Client(object):
         if fields:
             params['include'] = fields
 
-        resp = self.http.get(url, params=params)
+        resp = self.http.get(url, params=params, timeout=0.3)
         return resp.json()
 
     def report(self, key):
         url = self.build_url('api/getReport.sjs')
         params = {'report_KEY': key}
-        resp = self.http.get(url, params=params)
+        resp = self.http.get(url, params=params, timeout=0.3)
         return resp.json()
 
     def save(self, object, values, key=None):
@@ -218,7 +218,7 @@ class Client(object):
         if key:
             params['key'] = key
 
-        resp = self.http.post(url, params=params)
+        resp = self.http.post(url, params=params, timeout=0.3)
         data = resp.json()
 
         if data and data[0].get('result') == 'success':
@@ -231,7 +231,7 @@ class Client(object):
             'key': key,
             'tag': tag,
         }
-        resp = self.http.post(url, params=params)
+        resp = self.http.post(url, params=params, timeout=0.3)
         return resp.json()
 
     def link(self, object, key, to_object, with_key):
@@ -242,13 +242,13 @@ class Client(object):
             'link': to_object,
             'linkKey': with_key,
         }
-        resp = self.http.get(url, params=params)
+        resp = self.http.get(url, params=params, timeout=0.3)
         return resp.json()
 
     def delete(self, object, key):
         url = self.build_url('api/delete')
         params = {'object': object, 'key': key}
-        resp = self.http.get(url, params=params)
+        resp = self.http.get(url, params=params, timeout=0.3)
         return resp.json()
 
     #
