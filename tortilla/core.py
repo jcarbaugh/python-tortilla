@@ -1,5 +1,6 @@
 import json
 import requests
+from requests.exceptions import Timeout
 from .util import meta_fix
 
 class SalsaObject(object):
@@ -129,14 +130,19 @@ class Client(object):
         if chapter_key:
             params['chapter_KEY'] = chapter_key
 
-        resp = self.http.get(url, params=params, timeout=0.3)
-        data = resp.json()
+        try:
 
-        if 'status' in data and data['status'] == 'success':
-            self.authenticated = True
-            return True
+            resp = self.http.get(url, params=params, timeout=0.3)
+            data = resp.json()
 
-        raise AuthenticationError(data.get('message', 'Unable to authenticate'))
+            if 'status' in data and data['status'] == 'success':
+                self.authenticated = True
+                return True
+
+            raise AuthenticationError(data.get('message', 'Unable to authenticate'))
+
+        except Timeout:
+            pass
 
     def describe(self, object):
         url = self.build_url('api/describe2.sjs')
