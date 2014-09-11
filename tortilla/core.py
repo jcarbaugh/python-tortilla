@@ -105,7 +105,7 @@ class Client(object):
         return "%s://%s.salsalabs.com/%s" % (scheme, self.hq, path)
 
     def get_json(self, url, params=None):
-        resp = self.http.get(url, params=params)
+        resp = self.http.get(url, params=params, timeout=0.3)
 
         if params.get('object') == 'email_blast':
             content = meta_fix(resp.content)
