@@ -99,6 +99,7 @@ class Client(object):
         self.http = requests.Session()
         self.http.headers.update({'User-Agent': 'python-tortilla'})
         self.http.params = {'json': 'true'}
+        self.timeout = 1.0
         self.authenticated = False
 
     def build_url(self, path, secure=True):
@@ -106,7 +107,7 @@ class Client(object):
         return "%s://%s.salsalabs.com/%s" % (scheme, self.hq, path)
 
     def get_json(self, url, params=None):
-        resp = self.http.get(url, params=params, timeout=0.3)
+        resp = self.http.get(url, params=params, timeout=self.timeout)
 
         if params.get('object') == 'email_blast':
             content = meta_fix(resp.content)
@@ -132,7 +133,7 @@ class Client(object):
 
         try:
 
-            resp = self.http.get(url, params=params, timeout=0.3)
+            resp = self.http.get(url, params=params, timeout=self.timeout)
             data = resp.json()
 
             if 'status' in data and data['status'] == 'success':
@@ -206,13 +207,13 @@ class Client(object):
         if fields:
             params['include'] = fields
 
-        resp = self.http.get(url, params=params, timeout=0.3)
+        resp = self.http.get(url, params=params, timeout=self.timeout)
         return resp.json()
 
     def report(self, key):
         url = self.build_url('api/getReport.sjs')
         params = {'report_KEY': key}
-        resp = self.http.get(url, params=params, timeout=0.3)
+        resp = self.http.get(url, params=params, timeout=self.timeout)
         return resp.json()
 
     def save(self, object, values, key=None):
@@ -224,7 +225,7 @@ class Client(object):
         if key:
             params['key'] = key
 
-        resp = self.http.post(url, params=params, timeout=0.3)
+        resp = self.http.post(url, params=params, timeout=self.timeout)
         data = resp.json()
 
         if data and data[0].get('result') == 'success':
@@ -237,7 +238,7 @@ class Client(object):
             'key': key,
             'tag': tag,
         }
-        resp = self.http.post(url, params=params, timeout=0.3)
+        resp = self.http.post(url, params=params, timeout=self.timeout)
         return resp.json()
 
     def link(self, object, key, to_object, with_key):
@@ -248,13 +249,13 @@ class Client(object):
             'link': to_object,
             'linkKey': with_key,
         }
-        resp = self.http.get(url, params=params, timeout=0.3)
+        resp = self.http.get(url, params=params, timeout=self.timeout)
         return resp.json()
 
     def delete(self, object, key):
         url = self.build_url('api/delete')
         params = {'object': object, 'key': key}
-        resp = self.http.get(url, params=params, timeout=0.3)
+        resp = self.http.get(url, params=params, timeout=self.timeout)
         return resp.json()
 
     #
