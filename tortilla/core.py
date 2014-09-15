@@ -88,8 +88,18 @@ class EmailBlast(SalsaObject):
 # supporter_action_target, supporter_action_content, chapter
 
 
+def check_authentication(f):
+    def wrapper(client, *args, **kwargs):
+        if not client.authenticated:
+            if client.auth_email and client.auth_password:
+                client.authenticate(client.hq, client.auth_email, client.auth_password)
+        return f(client, *args, **kwargs)
+    return wrapper
+
+
 class AuthenticationError(Exception):
     pass
+
 
 class Client(object):
 
@@ -109,6 +119,7 @@ class Client(object):
         scheme = 'https' if secure else 'http'
         return "%s://%s.salsalabs.com/%s" % (scheme, self.hq, path)
 
+    @check_authentication
     def get(self, url, params=None, raw=False):
 
         try:
@@ -127,6 +138,7 @@ class Client(object):
         except Timeout:
             pass
 
+    @check_authentication
     def post(self, url, params=None, raw=False):
 
         try:
@@ -161,7 +173,8 @@ class Client(object):
 
         try:
 
-            data = self.get(url, params=params)
+            resp = self.http.get(url, params=params)
+            data = resp.json()
 
             if 'status' in data and data['status'] == 'success':
                 self.authenticated = True
