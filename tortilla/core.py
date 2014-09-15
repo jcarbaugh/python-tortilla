@@ -94,30 +94,58 @@ class AuthenticationError(Exception):
 class Client(object):
 
     def __init__(self):
-        # self.base_url =
         self.hq = None
+        self.auth_email = None
+        self.auth_password = None
+        self.authenticated = False
+
+        self.timeout = None
+
         self.http = requests.Session()
         self.http.headers.update({'User-Agent': 'python-tortilla'})
         self.http.params = {'json': 'true'}
-        self.timeout = 1.0
-        self.authenticated = False
 
     def build_url(self, path, secure=True):
         scheme = 'https' if secure else 'http'
         return "%s://%s.salsalabs.com/%s" % (scheme, self.hq, path)
 
-    def get_json(self, url, params=None):
-        resp = self.http.get(url, params=params, timeout=self.timeout)
+    def get(self, url, params=None, raw=False):
 
-        if params.get('object') == 'email_blast':
-            content = meta_fix(resp.content)
+        try:
+
+            resp = self.http.get(url, params=params, timeout=self.timeout)
+            content = resp.content
+
+            if params and params.get('object') == 'email_blast':
+                content = meta_fix(content)
+
+            if raw:
+                return content
+
             return json.loads(content)
 
-        return resp.json()
+        except Timeout:
+            pass
+
+    def post(self, url, params=None, raw=False):
+
+        try:
+
+            resp = self.http.post(url, params=params, timeout=self.timeout)
+
+            if raw:
+                return resp.content
+
+            return json.loads(resp.content)
+
+        except Timeout:
+            pass
 
     def authenticate(self, hq, email, password, org_key=None, chapter_key=None):
 
         self.hq = hq
+        self.auth_email = email
+        self.auth_password = password
 
         url = self.build_url('api/authenticate.sjs')
 
@@ -133,8 +161,7 @@ class Client(object):
 
         try:
 
-            resp = self.http.get(url, params=params, timeout=self.timeout)
-            data = resp.json()
+            data = self.get(url, params=params)
 
             if 'status' in data and data['status'] == 'success':
                 self.authenticated = True
@@ -148,7 +175,7 @@ class Client(object):
     def describe(self, object):
         url = self.build_url('api/describe2.sjs')
         params = {'object': object}
-        return self.get_json(url, params=params)
+        return self.get(url, params=params)
 
     def object(self, object, key, fields=None):
 
@@ -162,7 +189,7 @@ class Client(object):
         if fields:
             params['include'] = fields
 
-        return self.get_json(url, params=params)
+        return self.get(url, params=params)
 
     def objects(self, object, condition=None, order_by=None, limit=None, fields=None):
 
@@ -179,7 +206,7 @@ class Client(object):
         if fields:
             params['include'] = fields
 
-        return self.get_json(url, params=params)
+        return self.get(url, params=params)
 
     def join(self, object_left, key_left, object_right, key_right=None, object_center=None, **kwargs):
 
@@ -207,14 +234,12 @@ class Client(object):
         if fields:
             params['include'] = fields
 
-        resp = self.http.get(url, params=params, timeout=self.timeout)
-        return resp.json()
+        return self.get(url, params=params)
 
     def report(self, key):
         url = self.build_url('api/getReport.sjs')
         params = {'report_KEY': key}
-        resp = self.http.get(url, params=params, timeout=self.timeout)
-        return resp.json()
+        return self.get(url, params=params)
 
     def save(self, object, values, key=None):
 
@@ -225,8 +250,8 @@ class Client(object):
         if key:
             params['key'] = key
 
-        resp = self.http.post(url, params=params, timeout=self.timeout)
-        data = resp.json()
+        content = self.post(url, params=params)
+        data = json.loads(content)
 
         if data and data[0].get('result') == 'success':
             return data[0].get('key')
@@ -238,8 +263,8 @@ class Client(object):
             'key': key,
             'tag': tag,
         }
-        resp = self.http.post(url, params=params, timeout=self.timeout)
-        return resp.json()
+        content = self.post(url, params=params)
+        return json.loads(content)
 
     def link(self, object, key, to_object, with_key):
         url = self.build_url('save')
@@ -249,14 +274,12 @@ class Client(object):
             'link': to_object,
             'linkKey': with_key,
         }
-        resp = self.http.get(url, params=params, timeout=self.timeout)
-        return resp.json()
+        return self.get(url, params=params)
 
     def delete(self, object, key):
         url = self.build_url('api/delete')
         params = {'object': object, 'key': key}
-        resp = self.http.get(url, params=params, timeout=self.timeout)
-        return resp.json()
+        return self.get(url, params=params)
 
     #
     # custom fetch methods
