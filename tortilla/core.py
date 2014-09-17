@@ -263,8 +263,7 @@ class Client(object):
         if key:
             params['key'] = key
 
-        content = self.post(url, params=params)
-        data = json.loads(content)
+        data = self.post(url, params=params)
 
         if data and data[0].get('result') == 'success':
             return data[0].get('key')
@@ -276,8 +275,7 @@ class Client(object):
             'key': key,
             'tag': tag,
         }
-        content = self.post(url, params=params)
-        return json.loads(content)
+        return self.post(url, params=params)
 
     def link(self, object, key, to_object, with_key):
         url = self.build_url('save')
