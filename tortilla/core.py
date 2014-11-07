@@ -90,10 +90,21 @@ class EmailBlast(SalsaObject):
 
 def check_authentication(f):
     def wrapper(client, *args, **kwargs):
+
         if not client.authenticated:
             if client.auth_email and client.auth_password:
                 client.authenticate(client.hq, client.auth_email, client.auth_password)
-        return f(client, *args, **kwargs)
+
+        data = f(client, *args, **kwargs)
+
+        if data and isinstance(data[0], dict):
+            if data[0].get('result') == 'error':
+                client.authenticated = False
+                client.authenticate(client.hq, client.auth_email, client.auth_password)
+                data = f(client, *args, **kwargs)
+
+        return data
+
     return wrapper
 
 
