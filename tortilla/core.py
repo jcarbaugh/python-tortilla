@@ -97,7 +97,7 @@ def check_authentication(f):
 
         data = f(client, *args, **kwargs)
 
-        if data and isinstance(data[0], dict):
+        if data and not isinstance(data, dict) and isinstance(data[0], dict):
             if data[0].get('result') == 'error':
                 client.authenticated = False
                 client.authenticate(client.hq, client.auth_email, client.auth_password)
