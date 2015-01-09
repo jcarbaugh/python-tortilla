@@ -232,7 +232,8 @@ class Client(object):
 
         return self.get(url, params=params)
 
-    def join(self, object_left, key_left, object_right, key_right=None, object_center=None, **kwargs):
+    def join(self, object_left, key_left, object_right, key_right=None, object_center=None,
+             condition=None, order_by=None, limit=None, fields=None):
 
         url = self.build_url('api/getLeftJoin.sjs')
 
@@ -241,7 +242,18 @@ class Client(object):
             object = "%s%s(%s)" % (object, object_center, key_right)
         object = "%s%s" % (object, object_right)
 
-        return self.objects(object, **kwargs)
+        params = {'object': object}
+
+        if condition:
+            params['condition'] = condition
+        if order_by:
+            params['orderBy'] = order_by
+        if limit:
+            params['limit'] = limit
+        if fields:
+            params['include'] = fields
+
+        return self.get(url, params=params)
 
     def tagged(self, object, tag, condition=None, order_by=None, limit=None, fields=None):
 
