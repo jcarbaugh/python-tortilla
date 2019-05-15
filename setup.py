@@ -13,7 +13,7 @@ setup(
     license='BSD',
     long_description=long_description,
     platforms=["any"],
-    install_requires=["requests==2.2.1"],
+    install_requires=["requests<3.0"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
